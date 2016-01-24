@@ -113,38 +113,45 @@ public class TranslatePerson
                 
                 //Если дистанция редактирования между искомым ФИО и ФИО автора на dblp 
                 //В зависимости от длины искомого ФИО определяем, какой порог расстояния редактирования, чтобы выявлять подходящие соответствия
-                double limit = (fullFIO.length() > 20) ? fullFIO.length() * 0.2 : (fullFIO.length() > 10) ? 4 : 1;
-                if(editDistance(fullFIO, person) <= limit)
+                //double limit = (fullFIO.length() > 20) ? fullFIO.length() * 0.2 : (fullFIO.length() > 10) ? 4 : 1;
+                double limit = fullFIO.length() * 0.15;
+                boolean ok = true;
+                
+                //Если поиск по инициалам, то они должны совпадать точно или отличаться количеством букв (Ц = C или Ts)
+                if (initials)
                 {
-                    boolean ok = true;
-                    
-                    //Если поиск по инициалам, то они должны совпадать точно или отличаться количеством букв (Ц = C или Ts)
-                    if (initials)
-                    {
-                        //Разбиение искомых ФИО и ФИО с dblp на части
-                        ArrayList<String> fullFIOParts = new ArrayList<>(Arrays.asList(fullFIO.split(" ")));
-                        ArrayList<String> personFIOParts = new ArrayList<>(Arrays.asList(person.split(" ")));
+                    //Разбиение искомых ФИО и ФИО с dblp на части
+                    ArrayList<String> fullFIOParts = new ArrayList<>(Arrays.asList(fullFIO.split(" ")));
+                    ArrayList<String> personFIOParts = new ArrayList<>(Arrays.asList(person.split(" ")));
                         
-                        //Для каждой части
-                        for (int i=0; i<fullFIOParts.size(); i++)
+                    //Для каждой части
+                    for (int i=0; i<fullFIOParts.size(); i++)
+                    {
+                        //Если инициал
+                        if ((fullFIOParts.get(i).length() == 2) || (fullFIOParts.get(i).length()== 3))
                         {
-                            //Если инициал
-                            if ((fullFIOParts.get(i).length() == 2) || (fullFIOParts.get(i).length()== 3))
+                            //Если одинаковое количество частей ФИО, то если не полное совпадение и одинаковая длина инициалов, убрать из списка подходящих имен
+                            if (fullFIOParts.size() == personFIOParts.size())
                             {
-                                //Если одинаковое количество частей ФИО, то если не полное совпадение и одинаковая длина инициалов, убрать из списка подходящих имен
-                                if (fullFIOParts.size() == personFIOParts.size())
-                                {
-                                    if (!((fullFIOParts.get(i).equalsIgnoreCase(personFIOParts.get(i))) || (Math.abs(fullFIOParts.get(i).length() - personFIOParts.get(i).length()) == 1)))
-                                        ok = false;
-                                }
-                                //Если разное количество частей ФИО, то инициал искомого ФИО должен содержаться в ФИО на dblp
-                                else if (!(personFIOParts.contains(fullFIOParts.get(i))))
+                                //Если длина инициалов разная, то ограничение на дистанцию редактирования увеличиваем для учета этой разницы
+                                if (Math.abs(fullFIOParts.get(i).length() - personFIOParts.get(i).length()) == 1)
+                                    //Для совсем коротких имен ограничение не увеличивается - будет слишком много совпадений
+                                    if (fullFIO.length() > 10) 
+                                        limit += 2;
+                                //Иначе, если инициалы разные, то имя не подходит
+                                else if (!(fullFIOParts.get(i).equalsIgnoreCase(personFIOParts.get(i))))
                                     ok = false;
-                            }  
-                        }
+                            }
+                            //Если разное количество частей ФИО, то инициал искомого ФИО должен содержаться в ФИО на dblp
+                            else if (!(personFIOParts.contains(fullFIOParts.get(i))))
+                                ok = false;
+                        }  
                     }
+                }
                     
-                    if (ok)
+                if(ok)
+                {
+                    if(editDistance(fullFIO, person) <= limit)
                         results.add(person);
                 }
             }
