@@ -51,25 +51,28 @@ public class MakeRating
 class PersonThread implements Callable
 {
     //ФИО сотрудника, для которого выполняется расчет
-    private String person;
+    private String personName;
+    private String personURI = "http://lod.ifmo.ru/resource/Person";
         
     //Список авторов, среди которых ищется соответствие
     private HashSet<String> data = new HashSet<String>();
         
-    public PersonThread(String person1, HashSet<String> data1)
+    public PersonThread(String person, HashSet<String> data1)
     {
+        String [] idAndName = person.split(";");
         data = data1;
-        person = person1;
+        personURI += idAndName[0];
+        personName = idAndName[1];
     }
         
     @Override
     public HashMap call() 
     {
-        return calculations(person, data);
+        return calculations(personURI, personName, data);
     }
         
     //Все вычисления. На вход - ФИО сотрудниа и список авторов
-    public HashMap calculations(String person, HashSet<String> data)
+    public HashMap calculations(String personId, String personName, HashSet<String> data)
     {
         HashMap result = new HashMap();
 
@@ -83,7 +86,7 @@ class PersonThread implements Callable
             
             //Получение спика имен с dblp, которые соответствуют ФИО сотрудника
             FindPerson finder = new FindPerson();
-            HashSet<String> names = finder.findPerson(person, data);
+            HashSet<String> names = finder.findPerson(personName, data);
 
             //Для каждого из списка подходящих имен с dblp получаем SJR публикаций
             for (String name : names)
@@ -126,7 +129,7 @@ class PersonThread implements Callable
                 } 
                 catch (Exception ex) 
                 {
-                    System.out.println("Error for: " + person);
+                    System.out.println("Error for: " + personName);
                     ex.printStackTrace();
                 }
             }
@@ -138,7 +141,7 @@ class PersonThread implements Callable
             }
                 
             //Добавление результата в HashMap: ключ - ФИО сотрудника, значение - итоговый рейтинг SJR
-            result.put(person, SJR);
+            result.put(personId+" , "+personName, SJR);
         } 
         catch (Exception ex) 
         {

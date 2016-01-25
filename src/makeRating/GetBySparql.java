@@ -12,11 +12,12 @@ public class GetBySparql
     "PREFIX foaf: <http://xmlns.com/foaf/0.1/> \n" +
     "PREFIX vwc: <http://vivoweb.org/ontology/core#> \n" +
     "PREFIX aksw: <http://vivoplus.aksw.org/ontology#> \n" +
-    "select distinct ?name ?lastName ?middleName where {\n" + 
+    "select distinct ?id ?name ?lastName ?middleName where {\n" + 
     "?person vwc:affiliatedOrganization ?laboratory;\n" +
+    "aksw:pcardId ?id; \n" +
     "foaf:firstName ?name; \n" +
     "foaf:lastName ?lastName;\n" +
-    "vwc:middleName ?middleName }";
+    "vwc:middleName ?middleName}";
 
     public static HashSet<String> getPersons() 
     {
@@ -33,7 +34,8 @@ public class GetBySparql
             String name = solution.get("name").asLiteral().getLexicalForm();
             String surname = solution.get("lastName").asLiteral().getLexicalForm();
             String middlename = solution.get("middleName").asLiteral().getLexicalForm();
-            persons.add(surname + " " + name + " " + middlename);
+            String id = solution.get("id").asLiteral().getLexicalForm();
+            persons.add(id+";"+surname + " " + name + " " + middlename);
         }
         return persons;
     }

@@ -30,13 +30,13 @@ public class Main extends HttpServlet {
 		
 		BufferedReader in = null;
 		try {
-		    in = new BufferedReader(new FileReader("/home/latyshev/workspace/projectx/results.txt"));
+		    in = new BufferedReader(new FileReader("/home/latyshev/workspace/projectx/results.csv"));
 		    String read = null;
 
 		    out1.println("<P ALIGN='center'><TABLE BORDER=1>");
 		    while ((read = in.readLine()) != null) {
 		        out1.println("<tr>");
-		        String[] splited = read.split(" - ", 2);
+		        String[] splited = read.split(" , ");
 		    	for (String part : splited) {
 		            out1.println("<td>"+ part + "</td>");
 		        }
